@@ -39,6 +39,10 @@ def log_path():
     return os.path.join(vcs_path(), "log")
 
 
+def tags_path():
+    return os.path.join(vcs_path(), "tags")
+
+
 def check_repo():
     path = vcs_path()
     return path is not None and os.path.exists(path)
