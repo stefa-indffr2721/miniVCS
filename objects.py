@@ -3,7 +3,15 @@ import hashlib
 from repository import *
 
 
-def create_blob(file_path):
+def create_blob(file_path: str) -> Optional[str]:
+    """Создаёт blob-объект из файла и сохраняет его в хранилище объектов.
+
+    Args:
+        file_path: относительный путь к файлу от корня репозитория.
+
+    Returns:
+        SHA-1 хеш созданного blob-объекта, или None если файл не найден.
+    """
     repo = find_repo()
     abs_path = os.path.normpath(os.path.join(repo, file_path))
 
@@ -26,7 +34,15 @@ def create_blob(file_path):
     return blob_hash
 
 
-def build_tree_structure(index_entries):
+def build_tree_structure(index_entries: list[tuple[str, str]]) -> dict:
+    """Строит вложенную структуру дерева из записей файла index.
+
+    Args:
+        index_entries: список кортежей (режим, путь) из файла индекса.
+
+    Returns:
+        словарь, представляющий дерево файлов и поддиректорий.
+    """
     root = {}
 
     for mode, file_path in index_entries:
@@ -44,7 +60,15 @@ def build_tree_structure(index_entries):
     return root
 
 
-def write_tree(tree_dict):
+def write_tree(tree_dict: dict) -> Optional[str]:
+    """Рекурсивно записывает дерево объектов в хранилище.
+
+    Args:
+        tree_dict: словарь дерева, полученный из build_tree_structure.
+
+    Returns:
+        SHA-1 хеш корневого объекта дерева, или None если дерево пустое.
+    """
     entries = []
 
     for name in sorted(tree_dict.keys()):
@@ -76,7 +100,12 @@ def write_tree(tree_dict):
     return tree_hash
 
 
-def create_tree():
+def create_tree() -> Optional[str]:
+    """Создаёт объект дерева из текущего состояния индекса.
+
+    Returns:
+        SHA-1 хеш объекта дерева, или None если индекс пустой или отсутствует.
+    """
     if not os.path.exists(index_path()):
         return None
 

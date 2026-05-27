@@ -6,7 +6,12 @@ from repository import *
 from objects import create_tree
 
 
-def init():
+def init() -> str:
+    """Инициализирует новый репозиторий в текущей директории.
+
+    Returns:
+        строка с подтверждением инициализации.
+    """
     repo = os.getcwd()
     vcs = os.path.join(repo, ".vcs")
 
@@ -23,7 +28,15 @@ def init():
     return "Repo initialized"
 
 
-def add(file_path):
+def add(file_path: str) -> str:
+    """Добавляет файл в индекс для последующего коммита.
+
+    Args:
+        file_path: путь к файлу, который нужно добавить.
+
+    Returns:
+        строка с подтверждением добавления или сообщение об ошибке.
+    """
     if not check_repo():
         return "ADD ERROR: not init repo"
 
@@ -52,7 +65,17 @@ def add(file_path):
     return f"Added: {rel_file_path}"
 
 
-def tag(name, message="", list_tags=False):
+def tag(name: str, message: str = "", list_tags: bool = False) -> str:
+    """Создаёт тег для текущего коммита или выводит список тегов.
+
+    Args:
+        name: имя тега.
+        message: необязательное сообщение тега.
+        list_tags: если True, выводит список всех тегов вместо создания.
+
+    Returns:
+        строка с подтверждением создания тега, список тегов или сообщение об ошибке.
+    """
     if not check_repo():
         return "TAG ERROR: not init repo"
 
@@ -92,7 +115,12 @@ def tag(name, message="", list_tags=False):
     return f"Tag '{name}' -> {current_hash[:8]}"
 
 
-def get_tags_by_commit():
+def get_tags_by_commit() -> dict[str, tuple[str, str]]:
+    """Возвращает словарь тегов, сгруппированных по хешу коммита.
+
+    Returns:
+        словарь вида {хеш_коммита: (имя_тега, сообщение_тега)}.
+    """
     result = {}
 
     if not os.path.exists(tags_path()):
@@ -107,7 +135,12 @@ def get_tags_by_commit():
     return result
 
 
-def log():
+def log() -> str:
+    """Выводит историю коммитов начиная с HEAD.
+
+    Returns:
+        пустую строку при успехе или сообщение об ошибке.
+    """
     if not check_repo():
         return "LOG ERROR: not init repo"
 
@@ -196,7 +229,13 @@ def log():
     return ""
 
 
-def restore_files(tree_hash, base_path=""):
+def restore_files(tree_hash: str, base_path: str = "") -> None:
+    """Восстанавливает файлы из объекта дерева на диск.
+
+    Args:
+        tree_hash: хеш объекта дерева для восстановления.
+        base_path: относительный путь-префикс для вложенных деревьев.
+    """
     repo = find_repo()
     tree_file = os.path.join(objects_path(), tree_hash)
 
@@ -238,7 +277,14 @@ def restore_files(tree_hash, base_path=""):
             restore_files(obj_hash, rel_path)
 
 
-def collect_files_from_tree(tree_hash, base_path, result):
+def collect_files_from_tree(tree_hash: str, base_path: str, result: set[str]) -> None:
+    """Рекурсивно собирает относительные пути всех файлов из дерева.
+
+    Args:
+        tree_hash: хеш объекта дерева.
+        base_path: текущий относительный путь-префикс.
+        result: множество, в которое добавляются найденные пути.
+    """
     tree_file = os.path.join(objects_path(), tree_hash)
 
     if not os.path.exists(tree_file):
@@ -267,7 +313,14 @@ def collect_files_from_tree(tree_hash, base_path, result):
                 collect_files_from_tree(obj_hash, rel_path, result)
 
 
-def collect_index_entries(tree_hash, base_path, result):
+def collect_index_entries(tree_hash: str, base_path: str, result: list[tuple[str, str]]) -> None:
+    """Рекурсивно собирает записи индекса из дерева объектов.
+
+    Args:
+        tree_hash: хеш объекта дерева.
+        base_path: текущий относительный путь-префикс.
+        result: список, в который добавляются кортежи (режим, путь).
+    """
     tree_file = os.path.join(objects_path(), tree_hash)
 
     if not os.path.exists(tree_file):
@@ -296,7 +349,15 @@ def collect_index_entries(tree_hash, base_path, result):
                 collect_index_entries(obj_hash, rel_path, result)
 
 
-def reset(commit_hash):
+def reset(commit_hash: str) -> str:
+    """Откатывает репозиторий до указанного коммита.
+
+    Args:
+        commit_hash: полный SHA-1 хеш коммита для отката.
+
+    Returns:
+        строка с подтверждением отката или сообщение об ошибке.
+    """
     if not check_repo():
         return "RESET ERROR: not init repo"
 
@@ -367,7 +428,15 @@ def reset(commit_hash):
     return f"Reset to {commit_hash[:8]}"
 
 
-def commit(message=""):
+def commit(message: str = "") -> str:
+    """Создаёт новый коммит из текущего состояния индекса.
+
+    Args:
+        message: сообщение коммита.
+
+    Returns:
+        SHA-1 хеш созданного коммита или сообщение об ошибке.
+    """
     if not check_repo():
         return "COMMIT ERROR: not init repo"
 
@@ -403,3 +472,110 @@ author {author} {timestamp}
         f.write(commit_hash)
 
     return commit_hash
+
+
+def squash(n: int, message: str = "squashed commit", tag: Optional[str] = None) -> str:
+    """Объединяет последние N коммитов в один.
+
+    Args:
+        n: количество коммитов для объединения.
+        message: сообщение нового коммита.
+        tag: необязательное имя тега для нового коммита.
+
+    Returns:
+        строка с результатом операции или сообщение об ошибке.
+    """
+    if not check_repo():
+        return "SQUASH ERROR: not init repo"
+
+    if not os.path.exists(head_path()):
+        return "SQUASH ERROR: no commits yet"
+
+    with open(head_path(), "r") as f:
+        current_hash = f.read().strip()
+
+    if not current_hash:
+        return "SQUASH ERROR: no commits yet"
+
+    commits = []
+
+    while current_hash and len(commits) < n:
+        commit_file = os.path.join(log_path(), current_hash)
+
+        if not os.path.exists(commit_file):
+            break
+
+        commits.append(current_hash)
+
+        parent_hash = ""
+
+        with open(commit_file, "r") as f:
+            for line in f:
+                if line.startswith("parent "):
+                    parent_hash = line[7:].strip()
+                    break
+
+        current_hash = parent_hash
+
+    if len(commits) < n:
+        return f"SQUASH ERROR: only {len(commits)} commits available"
+
+    newest_commit = commits[0]
+    oldest_commit = commits[-1]
+
+    tree_hash = ""
+
+    with open(os.path.join(log_path(), newest_commit), "r") as f:
+        for line in f:
+            if line.startswith("tree "):
+                tree_hash = line[5:].strip()
+                break
+
+    if not tree_hash:
+        return "SQUASH ERROR: tree not found"
+
+    parent_hash = ""
+
+    with open(os.path.join(log_path(), oldest_commit), "r") as f:
+        for line in f:
+            if line.startswith("parent "):
+                parent_hash = line[7:].strip()
+                break
+
+    author = getpass.getuser()
+    timestamp = int(time.time())
+
+    content = f"""commit
+tree {tree_hash}
+parent {parent_hash}
+author {author} {timestamp}
+
+{message}"""
+
+    new_commit_hash = hashlib.sha1(content.encode()).hexdigest()
+
+    for commit_hash in commits:
+        commit_file = os.path.join(log_path(), commit_hash)
+
+        if os.path.exists(commit_file):
+            os.remove(commit_file)
+
+    with open(os.path.join(log_path(), new_commit_hash), "w") as f:
+        f.write(content)
+
+    with open(head_path(), "w") as f:
+        f.write(new_commit_hash)
+
+    if tag:
+        os.makedirs(tags_path(), exist_ok=True)
+
+        with open(os.path.join(tags_path(), tag), "w") as f:
+            f.write(new_commit_hash + "\n")
+            f.write(message)
+
+    result = f"squashed {n} commits into {new_commit_hash[:8]}"
+
+    if tag:
+        result += f" [tag: {tag}]"
+
+    return result
