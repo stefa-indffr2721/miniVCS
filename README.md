@@ -10,48 +10,48 @@
 
 #### Инициализация репозитория
 Перед началом работы необходимо инициализировать репозиторий: <br>
-```python main.py init``` <br>
+➤```python main.py init``` <br>
 После этого будет создана директория `.vcs` со структурой хранилища.
 
 #### Добавление файлов
 Добавление файла в индекс: <br>
-```python main.py add <путь к файлу>``` <br>
+➤```python main.py add <путь к файлу>``` <br>
 Пример: <br>
-```python main.py add test.txt```
+➤```python main.py add test.txt```
 
 #### Создание коммита
 Зафиксировать текущее состояние индекса: <br>
-```python main.py commit -m "сообщение коммита"``` <br>
+➤```python main.py commit -m "сообщение коммита"``` <br>
 Пример: <br>
-```python main.py commit -m "first commit"```
+➤```python main.py commit -m "first commit"```
 
 #### Просмотр истории
 Просмотр всех коммитов: <br>
-```python main.py log```
+➤```python main.py log```
 
 #### Теги
 Создание тега: <br>
-```python main.py tag <имя> -m "сообщение"``` <br>
+➤```python main.py tag <имя> -m "сообщение"``` <br>
 Пример: <br>
-```python main.py tag v1.0 -m "stable version"``` <br>
+➤```python main.py tag v1.0 -m "stable version"``` <br>
 
 Просмотр всех тегов: <br>
-```python main.py tag -l```
+➤```python main.py tag -l```
 
 #### Откат к коммиту
 Откат состояния репозитория к указанному коммиту: <br>
-```python main.py reset <hash>``` <br>
+➤```python main.py reset <hash>``` <br>
 Пример: <br>
-```python main.py reset a1b2c3d4e5f6```
+➤```python main.py reset a1b2c3d4e5f6```
 
 #### Сквош (объединение коммитов)
 Объединение последних N коммитов в один: <br>
-```python main.py squash <N> -m "сообщение"``` <br>
+➤```python main.py squash <N> -m "сообщение"``` <br>
 Пример: <br>
-```python main.py squash 3 -m "fix history"``` <br>
+➤```python main.py squash 3 -m "fix history"``` <br>
 
 С возможностью сразу поставить тег: <br>
-```python main.py squash 3 -m "release" -t v1.1```
+➤```python main.py squash 3 -m "release" -t v1.1```
 
 #### Структура проекта
 - `.vcs/` — служебная директория репозитория <br>

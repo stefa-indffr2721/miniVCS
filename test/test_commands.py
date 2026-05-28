@@ -103,3 +103,10 @@ class TestCommands(unittest.TestCase):
         self._commit(filename="b.txt", content="b")
         result = commands.squash(2, message="squashed")
         self.assertIn("squashed", result)
+
+    def test_tag_list_with_tags(self):
+        """Проверяет, что функция не выбрасывает исключение при выводе списка тегов."""
+        self._commit()
+        commands.tag("v1", message="first release")
+        result = commands.tag("", list_tags=True)
+        self.assertEqual(result, "")
